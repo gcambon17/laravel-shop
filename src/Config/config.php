@@ -280,4 +280,7 @@ return [
     */
     'callback_redirect_route' => '/',
 
+    'users_tables' => 'users',
+    'users_model'=> App\User::class,
+
 ];
