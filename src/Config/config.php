@@ -280,6 +280,14 @@ return [
     */
     'callback_redirect_route' => '/',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Migration command parameters
+    |--------------------------------------------------------------------------
+    |
+    | name of users table in database and User model class.
+    |
+    */
     'users_tables' => 'users',
     'users_model'=> App\User::class,
 
