@@ -37,7 +37,7 @@ trait ShopCartTrait
     {
         parent::boot();
 
-        static::deleting(function($user) {
+        static::deleting(function ($user) {
             if (!method_exists(Config::get('shop.users_model'), 'bootSoftDeletingTrait')) {
                 $user->items()->sync([]);
             }
@@ -69,8 +69,8 @@ trait ShopCartTrait
     /**
      * Adds item to cart.
      *
-     * @param mixed $item     Item to add, can be an Store Item, a Model with ShopItemTrait or an array.
-     * @param int   $quantity Item quantity in cart.
+     * @param mixed $item Item to add, can be an Store Item, a Model with ShopItemTrait or an array.
+     * @param int $quantity Item quantity in cart.
      */
     public function add($item, $quantity = 1, $quantityReset = false)
     {
@@ -83,37 +83,46 @@ trait ShopCartTrait
             if (is_object($item)) {
                 $reflection = new \ReflectionClass($item);
             }
-            $cartItem = call_user_func( Config::get('shop.item') . '::create', [
-                'user_id'       => $this->user->shopId,
-                'cart_id'       => $this->attributes['id'],
-                'sku'           => is_array($item) ? $item['sku'] : $item->sku,
-                'price'         => is_array($item) ? $item['price'] : $item->price,
-                'tax'           => is_array($item) 
-                                    ? (array_key_exists('tax', $item)
-                                        ?   $item['tax']
-                                        :   0
-                                    ) 
-                                    : (isset($item->tax) && !empty($item->tax)
-                                        ?   $item->tax
-                                        :   0
-                                    ),
-                'shipping'      => is_array($item) 
-                                    ? (array_key_exists('shipping', $item)
-                                        ?   $item['shipping']
-                                        :   0
-                                    ) 
-                                    : (isset($item->shipping) && !empty($item->shipping)
-                                        ?   $item->shipping
-                                        :   0
-                                    ),
-                'currency'      => Config::get('shop.currency'),
-                'quantity'      => $quantity,
-                'class'         => is_array($item) ? null : $reflection->getName(),
-                'reference_id'  => is_array($item) ? null : $item->shopId,
+            $user_id = null;
+            $session_id = null;
+            if (isset($this->user)) {
+                $user_id = $this->user->shopId;
+            }
+            else{
+                $session_id = \Session::getId();
+            }
+            $cartItem = call_user_func(Config::get('shop.item') . '::create', [
+                'user_id' => $user_id,
+                'session_id' => $session_id,
+                'cart_id' => $this->attributes['id'],
+                'sku' => is_array($item) ? $item['sku'] : $item->sku,
+                'price' => is_array($item) ? $item['price'] : $item->price,
+                'tax' => is_array($item)
+                    ? (array_key_exists('tax', $item)
+                        ? $item['tax']
+                        : 0
+                    )
+                    : (isset($item->tax) && !empty($item->tax)
+                        ? $item->tax
+                        : 0
+                    ),
+                'shipping' => is_array($item)
+                    ? (array_key_exists('shipping', $item)
+                        ? $item['shipping']
+                        : 0
+                    )
+                    : (isset($item->shipping) && !empty($item->shipping)
+                        ? $item->shipping
+                        : 0
+                    ),
+                'currency' => Config::get('shop.currency'),
+                'quantity' => $quantity,
+                'class' => is_array($item) ? null : $reflection->getName(),
+                'reference_id' => is_array($item) ? null : $item->shopId,
             ]);
         } else {
-            $cartItem->quantity = $quantityReset 
-                ? $quantity 
+            $cartItem->quantity = $quantityReset
+                ? $quantity
                 : $cartItem->quantity + $quantity;
             $cartItem->save();
         }
@@ -125,8 +134,8 @@ trait ShopCartTrait
      * Removes an item from the cart or decreases its quantity.
      * Returns flag indicating if removal was successful.
      *
-     * @param mixed $item     Item to remove, can be an Store Item, a Model with ShopItemTrait or an array.
-     * @param int   $quantity Item quantity to decrease. 0 if wanted item to be removed completly.
+     * @param mixed $item Item to remove, can be an Store Item, a Model with ShopItemTrait or an array.
+     * @param int $quantity Item quantity to decrease. 0 if wanted item to be removed completly.
      *
      * @return bool
      */
@@ -150,8 +159,8 @@ trait ShopCartTrait
     /**
      * Checks if the user has a role by its name.
      *
-     * @param string|array $name       Role name or array of role names.
-     * @param bool         $requireAll All roles in the array are required.
+     * @param string|array $name Role name or array of role names.
+     * @param bool $requireAll All roles in the array are required.
      *
      * @return bool
      */
@@ -186,8 +195,8 @@ trait ShopCartTrait
     /**
      * Scope class by a given user ID.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query  Query.
-     * @param mixed                                 $userId User ID.
+     * @param \Illuminate\Database\Eloquent\Builder $query Query.
+     * @param mixed $userId User ID.
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
@@ -199,7 +208,7 @@ trait ShopCartTrait
     /**
      * Scope to current user cart.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query  Query.
+     * @param \Illuminate\Database\Eloquent\Builder $query Query.
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
@@ -212,7 +221,7 @@ trait ShopCartTrait
     /**
      * Scope to current user cart and returns class model.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query  Query.
+     * @param \Illuminate\Database\Eloquent\Builder $query Query.
      *
      * @return this
      */
@@ -221,8 +230,8 @@ trait ShopCartTrait
         if (Auth::guest()) return;
         $cart = $query->whereCurrent()->first();
         if (empty($cart)) {
-            $cart = call_user_func( Config::get('shop.cart') . '::create', [
-                'user_id' =>  Auth::user()->shopId
+            $cart = call_user_func(Config::get('shop.cart') . '::create', [
+                'user_id' => Auth::user()->shopId
             ]);
         }
         return $cart;
@@ -231,7 +240,7 @@ trait ShopCartTrait
     /**
      * Scope to current user cart and returns class model.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query  Query.
+     * @param \Illuminate\Database\Eloquent\Builder $query Query.
      *
      * @return this
      */
@@ -240,19 +249,20 @@ trait ShopCartTrait
         if (empty($userId)) return;
         $cart = $query->whereUser($userId)->first();
         if (empty($cart)) {
-            $cart = call_user_func( Config::get('shop.cart') . '::create', [
-                'user_id' =>  $userId
+            $cart = call_user_func(Config::get('shop.cart') . '::create', [
+                'user_id' => $userId
             ]);
         }
         return $cart;
     }
 
-    public function scopeFindBySession($query, $sessionId){
+    public function scopeFindBySession($query, $sessionId)
+    {
         if (empty($sessionId)) return;
-        $cart = $query->where('session_id',$sessionId)->first();
+        $cart = $query->where('session_id', $sessionId)->first();
         if (empty($cart)) {
-            $cart = call_user_func( Config::get('shop.cart') . '::create', [
-                'session_id' =>  $sessionId
+            $cart = call_user_func(Config::get('shop.cart') . '::create', [
+                'session_id' => $sessionId
             ]);
         }
         return $cart;
@@ -270,16 +280,16 @@ trait ShopCartTrait
     {
         if (empty($statusCode)) $statusCode = Config::get('shop.order_status_placement');
         // Create order
-        $order = call_user_func( Config::get('shop.order') . '::create', [
-            'user_id'       => $this->user_id,
-            'statusCode'    => $statusCode
+        $order = call_user_func(Config::get('shop.order') . '::create', [
+            'user_id' => $this->user_id,
+            'statusCode' => $statusCode
         ]);
         // Map cart items into order
         for ($i = count($this->items) - 1; $i >= 0; --$i) {
             // Attach to order
-            $this->items[$i]->order_id  = $order->id;
+            $this->items[$i]->order_id = $order->id;
             // Remove from cart
-            $this->items[$i]->cart_id   = null;
+            $this->items[$i]->cart_id = null;
             // Update
             $this->items[$i]->save();
         }
@@ -308,8 +318,8 @@ trait ShopCartTrait
      */
     private function getItem($sku)
     {
-        $className  = Config::get('shop.item');
-        $item       = new $className();
+        $className = Config::get('shop.item');
+        $item = new $className();
         return $item->where('sku', $sku)
             ->where('cart_id', $this->attributes['id'])
             ->first();
