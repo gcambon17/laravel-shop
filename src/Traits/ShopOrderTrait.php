@@ -29,7 +29,7 @@ trait ShopOrderTrait
         parent::boot();
 
         static::deleting(function($user) {
-            if (!method_exists(Config::get('auth.model'), 'bootSoftDeletingTrait')) {
+            if (!method_exists(Config::get('shop.users_model'), 'bootSoftDeletingTrait')) {
                 $user->items()->sync([]);
             }
 
@@ -44,7 +44,7 @@ trait ShopOrderTrait
      */
     public function user()
     {
-        return $this->belongsTo(Config::get('auth.model'), 'user_id');
+        return $this->belongsTo(Config::get('shop.users_model'), 'user_id');
     }
 
     /**

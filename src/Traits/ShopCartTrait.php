@@ -38,7 +38,7 @@ trait ShopCartTrait
         parent::boot();
 
         static::deleting(function($user) {
-            if (!method_exists(Config::get('auth.model'), 'bootSoftDeletingTrait')) {
+            if (!method_exists(Config::get('shop.users_model'), 'bootSoftDeletingTrait')) {
                 $user->items()->sync([]);
             }
 
@@ -53,7 +53,7 @@ trait ShopCartTrait
      */
     public function user()
     {
-        return $this->belongsTo(Config::get('auth.model'), 'user_id');
+        return $this->belongsTo(Config::get('shop.users_model'), 'user_id');
     }
 
     /**
@@ -242,6 +242,17 @@ trait ShopCartTrait
         if (empty($cart)) {
             $cart = call_user_func( Config::get('shop.cart') . '::create', [
                 'user_id' =>  $userId
+            ]);
+        }
+        return $cart;
+    }
+
+    public function scopeFindBySession($query, $sessionId){
+        if (empty($sessionId)) return;
+        $cart = $query->where('session_id',$sessionId)->first();
+        if (empty($cart)) {
+            $cart = call_user_func( Config::get('shop.cart') . '::create', [
+                'session_id' =>  $sessionId
             ]);
         }
         return $cart;
