@@ -12,6 +12,7 @@ namespace Amsgames\LaravelShop\Traits;
  * @package Amsgames\LaravelShop
  */
 
+use Amsgames\LaravelShop\Models\ShopItemModel;
 use Shop;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
@@ -38,10 +39,6 @@ trait ShopCartTrait
         parent::boot();
 
         static::deleting(function ($user) {
-            if (!method_exists(Config::get('shop.users_model'), 'bootSoftDeletingTrait')) {
-                $user->items()->sync([]);
-            }
-
             return true;
         });
     }
